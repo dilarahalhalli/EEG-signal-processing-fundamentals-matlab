@@ -1,0 +1,14 @@
+Fs = 200;  % Sampling frequency, check the dataset description to be sure
+t_sec = 10;  % Number of seconds you want to plot, for example, the first 10 seconds of the cz-eeg1 channel
+n = Fs * t_sec;
+
+sig = cz_eeg1(1:n); % Used signal
+
+time = (0:n-1)/Fs;
+
+figure;
+plot(time, sig);
+xlabel('Time (s)');
+ylabel('Amplitude (\muV)');
+title('SEED EEG Raw Data - cz - eeg1 (first 10 seconds)');
+grid on;
