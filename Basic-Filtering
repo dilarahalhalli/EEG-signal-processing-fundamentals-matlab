@@ -1,0 +1,56 @@
+% Basic EEG Filtering Example with Butterworth Low-pass and High-pass Filters
+% Dataset: SEED (e.g., channel cz_eeg1, 5 seconds segment)
+% This script visualizes the effect of Butterworth filtering on raw EEG data.
+
+% PARAMETERS
+Fs = 200;          % Sampling rate in Hz (verify for your dataset)
+t_sec = 5;        % Number of seconds to visualize
+n = Fs * t_sec;    % Total sample points
+
+% LOAD EEG SIGNAL
+signal = cz_eeg1(1:n);  % Take first 5 seconds from channel cz_eeg1
+time = (0:n-1)/Fs;      % Time vector in seconds
+
+% DESIGN LOW-PASS BUTTERWORTH FILTER
+lp_cutoff = 30;  % Low-pass cutoff frequency (Hz)
+[bl, al] = butter(4, lp_cutoff/(Fs/2), 'low');  % 4th-order Butterworth
+signal_lp = filtfilt(bl, al, signal);           % Zero-phase filtering
+
+% DESIGN HIGH-PASS BUTTERWORTH FILTER
+hp_cutoff = 1;  % High-pass cutoff frequency (Hz)
+[bh, ah] = butter(4, hp_cutoff/(Fs/2), 'high');
+signal_hp = filtfilt(bh, ah, signal);
+
+% PLOT COMPARISON
+figure;
+subplot(3,1,1);
+plot(time, signal, 'k');
+title('Raw EEG Signal (cz-eeg1)');
+ylabel('Amplitude (\muV)');
+grid on;
+
+subplot(3,1,2);
+plot(time, signal_lp, 'b');
+title('Low-pass Filtered EEG (30 Hz, Butterworth)');
+ylabel('Amplitude (\muV)');
+grid on;
+
+subplot(3,1,3);
+plot(time, signal_hp, 'r');
+title('High-pass Filtered EEG (1 Hz, Butterworth)');
+xlabel('Time (s)');
+ylabel('Amplitude (\muV)');
+grid on;
+
+% Plot all signals in one figure for direct comparison
+figure;
+plot(time, signal, 'k', 'DisplayName', 'Raw');
+hold on;
+plot(time, signal_lp, 'b', 'DisplayName', 'Low-pass');
+plot(time, signal_hp, 'r', 'DisplayName', 'High-pass');
+xlabel('Time (s)');
+ylabel('Amplitude (\muV)');
+title('Comparing Raw and Filtered EEG Data (Butterworth Filter Example)');
+legend;
+grid on;
+
