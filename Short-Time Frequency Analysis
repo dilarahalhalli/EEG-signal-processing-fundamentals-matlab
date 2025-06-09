@@ -1,0 +1,31 @@
+% Frequency Spectrum Analysis of EEG Signal (Example: cz_eeg1, 5 seconds)
+
+Fs = 200;          % Sampling rate (Hz)
+t_sec = 5;        % Segment length in seconds
+n = Fs * t_sec;    % Number of samples
+
+signal = cz_eeg1(1:n);  % Select the first 5 seconds
+L = length(signal);     % Signal length
+
+% Compute FFT
+Y = fft(signal);
+P2 = abs(Y/L);                  % Two-sided spectrum
+P1 = P2(1:floor(L/2)+1);        % Single-sided spectrum
+P1(2:end-1) = 2*P1(2:end-1);    % Magnitude correction
+
+f = Fs*(0:floor(L/2))/L;        % Frequency axis (Hz)
+
+% Plot
+figure;
+plot(f, P1, 'k');
+xlim([0 40]); % EEG bands of interest (0–40 Hz)
+xlabel('Frequency (Hz)');
+ylabel('Amplitude');
+title('Frequency Spectrum of EEG Channel cz\_eeg1 (Dominant Frequency Detection)');
+grid on;
+
+% Highlight frequency bands (Delta, Theta, Alpha, Beta)
+hold on;
+ymax = max(P1);
+legend('FFT Spectrum');
+hold off;
