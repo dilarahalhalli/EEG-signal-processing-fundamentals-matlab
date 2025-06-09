@@ -1,0 +1,49 @@
+% Varsayım: cz_eeg1, cz_eeg2, ..., cz_eeg24 değişkenleri workspace'te var.
+% Her biri 1 x n vektör (ör. 10 saniye * 200 Hz = 2000 örnek)
+% Segment bazında öznitelik çıkarımı ve SVM ile 2 sınıf ayrımı.
+
+Fs = 200;                 % Sampling rate (Hz)
+segment_sec = 2;          % Her segmentin süresi (saniye)
+segment_len = Fs * segment_sec;
+
+num_channels = 24;
+n = length(cz_eeg1);      % Kanal uzunluğu
+num_segments = floor(n / segment_len);
+
+% Özellik matrisini oluştur: Her segment, her kanal için ortalama değer
+X = zeros(num_segments, num_channels);
+for seg = 1:num_segments
+    idx1 = (seg-1)*segment_len + 1;
+    idx2 = seg*segment_len;
+    for ch = 1:num_channels
+        ch_data = eval(sprintf('cz_eeg%d', ch));
+        X(seg, ch) = mean(ch_data(idx1:idx2));
+    end
+end
+
+% --- ETİKETLER ---
+% ÖRNEK: İlk yarısı açık göz (0), ikinci yarısı kapalı göz (1)
+y = [zeros(num_segments/2,1); ones(num_segments/2,1)];
+
+% Eğitim ve test setine ayır
+cv = cvpartition(length(y), 'HoldOut', 0.3);
+idxTrain = training(cv);
+idxTest = test(cv);
+
+X_train = X(idxTrain,:);
+y_train = y(idxTrain);
+X_test  = X(idxTest,:);
+y_test  = y(idxTest);
+
+% SVM ile eğit
+SVMModel = fitcsvm(X_train, y_train, 'KernelFunction','linear');
+y_pred = predict(SVMModel, X_test);
+
+% Doğruluk oranı
+acc = mean(y_pred == y_test);
+disp(['Test doğruluk oranı: ', num2str(acc)])
+
+% --- (İsteğe Bağlı) Karışıklık Matrisi Göster ---
+figure;
+cm = confusionchart(y_test, y_pred);
+title('Confusion Matrix: Open vs. Closed Eyes EEG Classification');
