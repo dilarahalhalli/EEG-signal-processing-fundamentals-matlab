@@ -1,0 +1,30 @@
+% Automatic Blink Artifact Detection in EEG Using Thresholding
+% Example channel: cz_eeg1, first 30 seconds
+
+Fs = 200;          % Sampling rate (Hz)
+t_sec = 30;        % Segment length in seconds
+n = Fs * t_sec;    % Number of samples
+
+signal = cz_eeg1(1:n);  % EEG data for 30 seconds
+
+% Set a detection threshold (choose a value above normal EEG amplitude)
+threshold = mean(signal) + 3*std(signal);  % Example: mean + 3*std
+
+% Find peaks above threshold (using MATLAB's findpeaks function)
+[peak_vals, peak_locs] = findpeaks(signal, 'MinPeakHeight', threshold, 'MinPeakDistance', Fs/2);
+% MinPeakDistance prevents double-counting same blink (at least 0.5s apart)
+
+time = (0:n-1)/Fs;
+
+% Plot the EEG signal and detected blinks
+figure;
+plot(time, signal, 'k');
+hold on;
+plot(time(peak_locs), peak_vals, 'ro', 'MarkerSize', 8, 'DisplayName', 'Detected Blinks');
+yline(threshold, '--r', 'DisplayName', 'Detection Threshold');
+xlabel('Time (s)');
+ylabel('Amplitude (\muV)');
+title('Automatic Detection of Blink Artifacts in EEG (cz\_eeg1)');
+legend('Raw EEG', 'Detected Blinks', 'Threshold');
+grid on;
+
